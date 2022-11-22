@@ -1,6 +1,6 @@
 import unittest
 from main.PriceBasket import getPrice, calculateBasket, listContainsApples, \
-    listContainsAtLeastTwoSoups, calculateApplesDiscount, calculateBreadDiscount
+    listContainsAtLeastTwoSoups, calculateApplesDiscount, calculateBreadDiscount, listContainsBread, formatPrice
 
 class TestPriceBasket(unittest.TestCase):
 
@@ -22,6 +22,12 @@ class TestPriceBasket(unittest.TestCase):
         selfs.assertEqual(listContainsAtLeastTwoSoups(['Apples', 'Bread', 'Soup']), False)
         selfs.assertEqual(listContainsAtLeastTwoSoups(['Apples', 'Bread', 'Milk']), False)
 
+    def test_containsBread(selfs):
+        selfs.assertEqual(listContainsBread(['Apples', 'Apples', 'Apples']), False)
+        selfs.assertEqual(listContainsBread(['Apples', 'Bread', 'Apples']), True)
+        selfs.assertEqual(listContainsBread(['Bread', 'Bread', 'Milk']), True)
+        selfs.assertEqual(listContainsBread(['Bread', 'Bread', 'Bread']), True)
+
     def test_calculateApplesDiscount(selfs):
         selfs.assertEqual(calculateApplesDiscount(['Apples', 'Apples', 'Apples']), 0.3)
         selfs.assertEqual(calculateApplesDiscount(['Apples', 'Bread', 'Apples']), 0.2)
@@ -33,6 +39,11 @@ class TestPriceBasket(unittest.TestCase):
         selfs.assertEqual(calculateBreadDiscount(['Soup', 'Bread', 'Soup']), 0.4)
         selfs.assertEqual(calculateBreadDiscount(['Apples', 'Bread', 'Milk']), 0)
         selfs.assertEqual(calculateBreadDiscount(['Soup', 'Bread', 'Milk']), 0)
+
+    def test_formatPrice(self):
+        self.assertEqual(formatPrice(0.41), '£0.41')
+        self.assertEqual(formatPrice(1.01), '£1.01')
+        self.assertEqual(formatPrice(3.00), '£3.00')
 
     def test_calculateBasket(selfs):
         selfs.assertEqual(calculateBasket(['Apples', 'Bread', 'Milk']), 3.1)

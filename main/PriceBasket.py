@@ -59,29 +59,29 @@ def calculateBasket(items):
         subtotal = subtotal + products[item]
     return round(subtotal, 2)
 
-def formatPriceWithCurrencySymbol(price):
+def formatPrice(price):
     return '£{:,.2f}'.format(price) # ':,' adds comma for thousand values and '.2f' rounds to 2dp
 
 def priceBasket(item1, item2, item3):
     items = [item1, item2, item3]
     subtotal = calculateBasket(items)
-    formattedSubtotal = formatPriceWithCurrencySymbol(subtotal)
+    formattedSubtotal = formatPrice(subtotal)
     appleDiscountValue = calculateApplesDiscount(items)
     breadDiscountValue = calculateBreadDiscount(items)
 
     # check for special offers
     if listContainsApples(items):
         print(f'Subtotal: {formattedSubtotal}')
-        formattedAppleDiscountValue = formatPriceWithCurrencySymbol(appleDiscountValue)
+        formattedAppleDiscountValue = formatPrice(appleDiscountValue)
         print(f'Apples 10% off: {formattedAppleDiscountValue}')
         newTotal = subtotal - appleDiscountValue
-        formattedNewTotal = formatPriceWithCurrencySymbol(newTotal)
+        formattedNewTotal = formatPrice(newTotal)
     elif listContainsAtLeastTwoSoups(items) and listContainsBread(items):
         print(f'Subtotal: {formattedSubtotal}')
-        formattedBreadDiscountValue = formatPriceWithCurrencySymbol(breadDiscountValue)
+        formattedBreadDiscountValue = formatPrice(breadDiscountValue)
         print(f'Half price loaf of bread with 2 tins of Soup: {formattedBreadDiscountValue}')
         newTotal = subtotal - breadDiscountValue
-        formattedNewTotal = formatPriceWithCurrencySymbol(newTotal)
+        formattedNewTotal = formatPrice(newTotal)
     else:
         print(f'Subtotal: {formattedSubtotal} (No offers available)')
 
@@ -91,6 +91,7 @@ def priceBasket(item1, item2, item3):
     except:
         print(f'Total: {formattedSubtotal}')
 
-priceBasket('Bread', 'Soup', 'Soup')
+# priceBasket('Bread', 'Soup', 'Soup')
+print (formatPrice(0.41))
 # if __name__ == '__main__':
 #     priceBasket(sys.argv[1], sys.argv[2], sys.argv[3])
