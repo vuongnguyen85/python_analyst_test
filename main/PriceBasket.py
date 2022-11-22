@@ -7,10 +7,6 @@ products = {
     'Soup': 0.65
 }
 
-appleDiscount = False
-soupCount = 0
-breadCount = 0
-
 def getPrice(item):
     return products[item]
 
