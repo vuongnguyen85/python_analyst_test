@@ -91,7 +91,5 @@ def priceBasket(item1, item2, item3):
     except:
         print(f'Total: {formattedSubtotal}')
 
-# priceBasket('Bread', 'Soup', 'Soup')
-print (formatPrice(0.41))
-# if __name__ == '__main__':
-#     priceBasket(sys.argv[1], sys.argv[2], sys.argv[3])
+if __name__ == '__main__':
+    priceBasket(sys.argv[1], sys.argv[2], sys.argv[3])
