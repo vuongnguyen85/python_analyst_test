@@ -1,6 +1,5 @@
 import unittest
-from pricebasket.PriceBasket import get_price, get_item_quantity\
-    , format_price, Offer
+from pricebasket.PriceBasket import get_price, Basket, format_price, Offer
 
 current_offers = {
     'Apples': ['percentage_discount', 10],  #  schema = item: ['discount_type', percentage_off, required_product, required_product_amount]
@@ -16,10 +15,10 @@ class TestPriceBasket(unittest.TestCase):
         self.assertEqual(get_price('Soup'), 0.65)
 
     def test_get_item_quantity(self):
-        self.assertEqual(get_item_quantity(['Apples', 'Apples', 'Apples'], 'Apples'), 3)
-        self.assertEqual(get_item_quantity(['Apples', 'Bread', 'Apples'], 'Apples'), 2)
-        self.assertEqual(get_item_quantity(['Apples', 'Bread', 'Milk'], 'Bread'), 1)
-        self.assertEqual(get_item_quantity(['Soup', 'Bread', 'Milk'], 'Apples'), 0)
+        self.assertEqual(Basket(['Apples', 'Apples', 'Apples']).get_item_quantity('Apples'), 3)
+        self.assertEqual(Basket(['Apples', 'Bread', 'Apples']).get_item_quantity('Apples'), 2)
+        self.assertEqual(Basket(['Apples', 'Bread', 'Milk']).get_item_quantity('Bread'), 1)
+        self.assertEqual(Basket(['Soup', 'Bread', 'Milk']).get_item_quantity('Apples'), 0)
 
     def test_format_price(self):
         self.assertEqual(format_price(0.41), '£0.41')
