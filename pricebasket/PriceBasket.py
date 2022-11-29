@@ -39,9 +39,6 @@ class Offer:
     def check_if_item_on_offer(self, product):
         return product in self.offers
 
-    def get_promo_message(self, product):
-        return f'  {product} {self.get_percentage_amount(product)}% off: {format_price(self.get_discount_amount(product))}'
-
     def get_offer_details(self, product):
         if (self.check_if_item_on_offer(product)):
             return self.offers[product]
@@ -94,8 +91,11 @@ class CalculateDiscount:
         return get_price(self.product) * self.Offer.get_discount_amount(self.product)
 
     def calculate_buy_x_get_x_discount(self, basket):
-        if (Basket(basket).get_item_quantity(self.Offer.get_required_item(self.product)) >= self.Offer.get_required_item_quantity(self.product)):
-            return self.calculate_percentage_discount()
+        basket_required_item_quantity = Basket(basket).get_item_quantity(self.Offer.get_required_item(self.product))
+        required_item_quantity = self.Offer.get_required_item_quantity(self.product)
+        if (basket_required_item_quantity >= required_item_quantity):
+            promo_limit = round(basket_required_item_quantity / required_item_quantity)
+            return self.calculate_percentage_discount() * promo_limit
         else:
             return 0
 
@@ -107,6 +107,9 @@ class CalculateDiscount:
                 return self.calculate_buy_x_get_x_discount(basket)
         else:
             return 0
+
+    def get_promo_message(self, discount_amount):
+        return f'  {self.product} {self.Offer.get_percentage_amount(self.product)}% off: {format_price(discount_amount)}'
 
 
 class PriceCalculator:
@@ -142,16 +145,16 @@ class PriceCalculator:
             print('Offers applied:')
             try:
                 if apples_discount > 0:
-                    print(offers.get_promo_message('Apples'))
+                    print(CalculateDiscount(offers, 'Apples').get_promo_message(apples_discount))
                     subtotal = subtotal - apples_discount
                 if bread_discount > 0:
-                    print(offers.get_promo_message('Bread'))
+                    print(CalculateDiscount(offers, 'Bread').get_promo_message(bread_discount))
                     subtotal = subtotal - bread_discount
                 if milk_discount > 0:
-                    print(offers.get_promo_message('Milk'))
+                    print(CalculateDiscount(offers, 'Milk').get_promo_message(milk_discount))
                     subtotal = subtotal - milk_discount
                 if soup_discount > 0:
-                    print(offers.get_promo_message('Soup'))
+                    print(CalculateDiscount(offers, 'Soup').get_promo_message(soup_discount))
                     subtotal = subtotal - soup_discount
             except:
                 'Exception if any discount_value is undefined'
