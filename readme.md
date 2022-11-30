@@ -7,7 +7,7 @@ This is app to calculate the shopping basket total. We currently have the follow
 - Milk
 - Soup
 
-We can update the available products inside PriceBasket.py. We can also update the current offers here too. 
+Inside PriceBasket.py, we can manage products from line 167 and manage offers from line 173.  
 
 ## Running Instructions
 We can run the price basket app by entering the following Input in the command line:
