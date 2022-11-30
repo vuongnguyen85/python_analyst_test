@@ -1,23 +1,38 @@
 import argparse
 
-products = {
-    'Apples': 1.00,
-    'Bread': 0.80,
-    'Milk': 1.30,
-    'Soup': 0.65
-}
-
-current_offers = {
-    'Apples': ['percentage_discount', 10],  #  schema = item: ['discount_type', percentage_off, required_product, required_product_amount]
-    'Bread': ['buy_x_get_x_discount', 50, 'Soup', 2]
-}
-
-
-def get_price(item):
-    return products[item]
+products = {}
+current_offers = {}
 
 def format_price(price):
     return '£{:,.2f}'.format(price)  # ':,' adds comma for thousand values and '.2f' rounds to 2dp
+
+def get_price(product):
+    return products[product]
+
+
+class AddProduct:
+    def __init__(self, name, price):
+        self.name = name
+        self.price = price
+        products.update({self.name: self.price})
+
+
+class CreateOffer:
+    def __init__(self, product, type, percentage_discount, additional_required_product = '', additional_required_product_qty = 0):
+        self.product = product
+        self.type = type
+        current_offers.update({product: [self._type, percentage_discount, additional_required_product, additional_required_product_qty]})
+
+class PercentageDiscountOffer(CreateOffer):
+    _type = 'percentage_discount'
+    def __init__(self, product, percentage_discount):
+        super().__init__(product, self._type, percentage_discount)
+
+
+class BuyXGetYDiscountOffer(CreateOffer):
+    _type = 'buy_x_get_y_discount'
+    def __init__(self, product, percentage_discount, additional_required_product, additional_required_product_qty):
+        super().__init__(product, self._type, percentage_discount, additional_required_product, additional_required_product_qty)
 
 
 class Basket:
@@ -36,80 +51,65 @@ class Offer:
     def __init__(self, offers):
         self.offers = offers
 
-    def check_if_item_on_offer(self, product):
-        return product in self.offers
+    def check_if_item_on_offer(self, offer_product):
+        return offer_product in self.offers
 
-    def get_offer_details(self, product):
-        if (self.check_if_item_on_offer(product)):
-            return self.offers[product]
+    def get_offer_details(self, offer_product):
+        return self.offers[offer_product]
+
+    def get_offer_type(self, offer_product):
+        if self.check_if_item_on_offer(offer_product):
+            return self.get_offer_details(offer_product)[0]
         else:
-            print(f'{product} is not currently on offer')
+            print(f'item is not on offer')
 
-    def get_offer_type(self, product):
-        if (self.check_if_item_on_offer(product)):
-            return self.get_offer_details(product)[0]
+    def get_percentage_amount(self, offer_product):
+        if self.check_if_item_on_offer(offer_product):
+            return self.get_offer_details(offer_product)[1]
         else:
-            print(f'{product} is not currently on offer')
+            print(f'item is not on offer')
 
-    def get_percentage_amount(self, product):
-        if (self.check_if_item_on_offer(product)):
-            return self.get_offer_details(product)[1]
-        else:
-            print(f'{product} is not currently on offer')
-
-    def get_discount_amount(self, product):
-        if (self.check_if_item_on_offer(product)):
-            return self.get_offer_details(product)[1] * .01
-        else:
-            print(f'{product} is not currently on offer')
-
-    def get_required_item(self, product):
-        if (self.check_if_item_on_offer(product)):
+    def get_required_item(self, offer_product):
+        if self.check_if_item_on_offer(offer_product):
             try:
-                return self.get_offer_details(product)[2]
+                return self.get_offer_details(offer_product)[2]
             except:
-                print(f'{product} doesn\'t need required item for offer')
+                print(f'offer item doesn\'t have required item')
         else:
-            print(f'{product} is not currently on offer')
+            print(f'item is not on offer')
 
-    def get_required_item_quantity(self, product):
-        if (self.check_if_item_on_offer(product)):
+    def get_required_item_quantity(self, offer_product):
+        if self.check_if_item_on_offer(offer_product):
             try:
-                return self.get_offer_details(product)[3]
+                return self.get_offer_details(offer_product)[3]
             except:
-                print(f'{product} doesn\'t need required item quantity for offer')
+                print(f'offer item doesn\'t have required item')
         else:
-            print(f'{product} is not currently on offer')
+            print(f'item is not on offer')
 
+    def calculate_percentage_discount(self, offer_product):
+        return get_price(offer_product) * self.get_percentage_amount(offer_product) * .01
 
-class CalculateDiscount:
-    def __init__(self, Offer, product):
-        self.Offer = Offer
-        self.product = product
-
-    def calculate_percentage_discount(self):
-        return get_price(self.product) * self.Offer.get_discount_amount(self.product)
-
-    def calculate_buy_x_get_x_discount(self, basket):
-        basket_required_item_quantity = Basket(basket).get_item_quantity(self.Offer.get_required_item(self.product))
-        required_item_quantity = self.Offer.get_required_item_quantity(self.product)
-        if (basket_required_item_quantity >= required_item_quantity):
-            promo_limit = round(basket_required_item_quantity / required_item_quantity)
-            return self.calculate_percentage_discount() * promo_limit
+    def calculate_buy_x_get_x_discount(self, basket, offer_product):
+        if Basket(basket).get_item_quantity(self.get_required_item(offer_product)) >= self.get_required_item_quantity(offer_product):
+            return self.calculate_percentage_discount(offer_product)
         else:
             return 0
 
-    def get_discount_amount(self, basket):
-        if (self.Offer.check_if_item_on_offer(self.product)):
-            if self.Offer.get_offer_type(self.product) == 'percentage_discount':
-                return self.calculate_percentage_discount()
-            elif self.Offer.get_offer_type(self.product) == 'buy_x_get_x_discount':
-                return self.calculate_buy_x_get_x_discount(basket)
+    def get_product_discount_amount(self, basket, offer_product):
+        if self.check_if_item_on_offer(offer_product):
+            offer_product_quantity = Basket(basket).get_item_quantity(offer_product)
+            if self.get_offer_type(offer_product) == 'percentage_discount':
+                return round((self.calculate_percentage_discount(offer_product) * offer_product_quantity), 2)  # discount_amount can be multiplied by offer_product quantity
+            elif self.get_offer_type(offer_product) == 'buy_x_get_y_discount':
+                promo_limit = round(Basket(basket).get_item_quantity(self.get_required_item(offer_product)) / self.get_required_item_quantity(offer_product))
+                return round((self.calculate_buy_x_get_x_discount(basket, offer_product) * min(promo_limit, offer_product_quantity)), 2)
+                # discount_amount can be multiplied by multiple of (required set of products), dependent on no. of offer_product in basket
         else:
             return 0
 
-    def get_promo_message(self, discount_amount):
-        return f'  {self.product} {self.Offer.get_percentage_amount(self.product)}% off: {format_price(discount_amount)}'
+    def get_promo_message(self, discount_amount, product):
+        return f'  {product} {self.get_percentage_amount(product)}% off: {format_price(discount_amount)}'
 
 
 class PriceCalculator:
@@ -128,34 +128,33 @@ class PriceCalculator:
         offers = Offer(current_offers)
 
         if offers.check_if_item_on_offer('Apples'):
-            apples_discount = round(CalculateDiscount(offers, 'Apples').get_discount_amount(self.basket), 2)
-
+            apples_discount_amt = round(offers.get_product_discount_amount(self.basket, 'Apples'), 2)
         if offers.check_if_item_on_offer('Bread'):
-            bread_discount = round(CalculateDiscount(offers, 'Bread').get_discount_amount(self.basket), 2)
+            print(offers.get_product_discount_amount(self.basket, 'Bread'))
+            bread_discount_amt = round(offers.get_product_discount_amount(self.basket, 'Bread'), 2)
 
         if offers.check_if_item_on_offer('Soup'):
-            milk_discount = round(CalculateDiscount(offers, 'Soup').get_discount_amount(self.basket), 2)
-
+            milk_discount_amt = round(offers.get_product_discount_amount(self.basket, 'Soup'), 2)
         if offers.check_if_item_on_offer('Milk'):
-            soup_discount = round(CalculateDiscount(offers, 'Milk').get_discount_amount(self.basket), 2)
+            soup_discount_amt = round(offers.get_product_discount_amount(self.basket, 'Milk'), 2)
 
         # check for special offers
-        if apples_discount > 0 or bread_discount > 0 or milk_discount > 0 or soup_discount > 0:
+        if apples_discount_amt > 0 or bread_discount_amt > 0 or milk_discount_amt > 0 or soup_discount_amt > 0:
             print(f'Subtotal: {formatted_subtotal}')
             print('Offers applied:')
             try:
-                if apples_discount > 0:
-                    print(CalculateDiscount(offers, 'Apples').get_promo_message(apples_discount))
-                    subtotal = subtotal - apples_discount
-                if bread_discount > 0:
-                    print(CalculateDiscount(offers, 'Bread').get_promo_message(bread_discount))
-                    subtotal = subtotal - bread_discount
-                if milk_discount > 0:
-                    print(CalculateDiscount(offers, 'Milk').get_promo_message(milk_discount))
-                    subtotal = subtotal - milk_discount
-                if soup_discount > 0:
-                    print(CalculateDiscount(offers, 'Soup').get_promo_message(soup_discount))
-                    subtotal = subtotal - soup_discount
+                if apples_discount_amt > 0:
+                    print(offers.get_promo_message(apples_discount_amt, 'Apples'))
+                    subtotal = subtotal - apples_discount_amt
+                if bread_discount_amt > 0:
+                    print(offers.get_promo_message(bread_discount_amt, 'Bread'))
+                    subtotal = subtotal - bread_discount_amt
+                if milk_discount_amt > 0:
+                    print(offers.get_promo_message(milk_discount_amt, 'Milk'))
+                    subtotal = subtotal - milk_discount_amt
+                if soup_discount_amt > 0:
+                    print(offers.get_promo_message(soup_discount_amt, 'Soup'))
+                    subtotal = subtotal - soup_discount_amt
             except:
                 'Exception if any discount_value is undefined'
         else:
@@ -164,9 +163,21 @@ class PriceCalculator:
         print(f'Total: {format_price(subtotal)}')
 
 
+# add products
+apples = AddProduct('Apples', 1.00)  #  schema = (product, price)
+bread = AddProduct('Bread', 0.80)
+milk = AddProduct('Milk', 1.30)
+soup = AddProduct('Soup', 0.65)
+
+# add offers
+apple_promo = PercentageDiscountOffer('Apples', 10)  #  schema = (offer_product, percentage_off)
+bread_promo = BuyXGetYDiscountOffer('Bread', 50, 'Soup', 2)  #  schema = item: [offer_product, percentage_off, required_product, required_product_amount]
+
+
 parser = argparse.ArgumentParser()
 parser.add_argument("items", type=str, nargs='+')  # nargs='+' here means at least one value required with no limit of how many arguments (items) could be added
 args = parser.parse_args()
+
 
 if __name__ == '__main__':
     PriceCalculator(args.items).price_basket()
