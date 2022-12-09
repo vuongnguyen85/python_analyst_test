@@ -1,61 +1,67 @@
 import unittest
-from pricebasket.PriceBasket import get_price, Basket, format_price, Offer
+from pricebasket.PriceBasket import Product, Basket, format_price, PriceCalculator, PercentageDiscountOffer, BuyXGetYDiscountOffer
 
-current_offers = {
-    'Apples': ['percentage_discount', 10],  #  schema = item: ['discount_type', percentage_off, required_product, required_product_amount]
-    'Bread': ['buy_x_get_y_discount', 50, 'Soup', 2]
+apple_promo = PercentageDiscountOffer('Apples', 10)
+bread_promo = BuyXGetYDiscountOffer('Bread', 50, 'Soup', 2)
+
+products = {
+    'Apples': 1,
+    'Bread': 0.8,
+    'Milk': 1.3,
+    'Soup': 0.65
 }
 
 
 class TestPriceBasket(unittest.TestCase):
-
-    def test_item_prices(self):
-        self.assertEqual(1, get_price('Apples'))
-        self.assertEqual(0.8, get_price('Bread'))
-        self.assertEqual(1.3, get_price('Milk'))
-        self.assertEqual(0.65, get_price('Soup'))
-
-    def test_get_item_quantity(self):
-        self.assertEqual(3, Basket(['Apples', 'Apples', 'Apples']).get_item_quantity('Apples'))
-        self.assertEqual(2, Basket(['Apples', 'Bread', 'Apples']).get_item_quantity('Apples'))
-        self.assertEqual(1, Basket(['Apples', 'Bread', 'Milk']).get_item_quantity('Bread'))
-        self.assertEqual(0, Basket(['Soup', 'Bread', 'Milk']).get_item_quantity('Apples'))
 
     def test_format_price(self):
         self.assertEqual('£0.41', format_price(0.41))
         self.assertEqual('£1.01', format_price(1.01))
         self.assertEqual('£3.00', format_price(3.00))
 
-    def test_check_item_on_offer(self):
-        self.assertEqual(True, Offer(current_offers).check_if_item_on_offer('Apples'))
-        self.assertEqual(True, Offer(current_offers).check_if_item_on_offer('Bread'))
-        self.assertEqual(False, Offer(current_offers).check_if_item_on_offer('Soup'))
+    def test_get_product_price(self):
+        self.assertEqual(1, Product.get_price('Apples'))
+        self.assertEqual(0.8, Product.get_price('Bread'))
+        self.assertEqual(1.3, Product.get_price('Milk'))
+        self.assertEqual(0.65, Product.get_price('Soup'))
+        self.assertEqual(0, Product.get_price('Banana'))
 
-    def test_get_offer_type(self):
-        self.assertEqual('percentage_discount', Offer(current_offers).get_offer_type('Apples'))
-        self.assertEqual('buy_x_get_x_discount', Offer(current_offers).get_offer_type('Bread'))
-        self.assertEqual(None, Offer(current_offers).get_offer_type('Soup'))
+    def test_get_item_quantity(self):
+        basket = Basket(['Apples', 'Apples', 'Apples', 'Bread', 'Soup', 'Soup'])
+        basket.update_customer_basket()
+        self.assertEqual(3, basket.get_item_quantity('Apples'))
+        self.assertEqual(2, basket.get_item_quantity('Soup'))
+        self.assertEqual(1, basket.get_item_quantity('Bread'))
 
-    def test_get_percentage_amount(self):
-        self.assertEqual(10, Offer(current_offers).get_percentage_amount('Apples'))
-        self.assertEqual(50, Offer(current_offers).get_percentage_amount('Bread'))
-        self.assertEqual(None, Offer(current_offers).get_percentage_amount('Soup'))
+    def test_get_promotion_message(self):
+        basket = ['Bread', 'Apples', 'Apples', 'Apples']
+        Basket(basket).update_customer_basket()
+        self.assertEqual('  Apples 10% off: £0.30', apple_promo.get_promotion_message(apple_promo.calculate_total_offer_discount_for_basket(basket)))
 
-    def test_get_required_item(self):
-        self.assertEqual(None, Offer(current_offers).get_required_item('Apples'))
-        self.assertEqual('Soup', Offer(current_offers).get_required_item('Bread'))
-        self.assertEqual(None, Offer(current_offers).get_required_item('Soup'))
+        basket = ['Bread', 'Apples', 'Apples', 'Apples', 'Bread', 'Soup', 'Soup', 'Soup', 'Soup']
+        Basket(basket).update_customer_basket()
+        self.assertEqual('  50% off Bread when buying 2 Soups: £0.80', bread_promo.get_promotion_message(bread_promo.calculate_total_offer_discount_for_basket(basket)))
 
-    def test_get_required_item_quantity(self):
-        self.assertEqual(None, Offer(current_offers).get_required_item_quantity('Apples'))
-        self.assertEqual(2, Offer(current_offers).get_required_item_quantity('Bread'))
-        self.assertEqual(None, Offer(current_offers).get_required_item_quantity('Soup'))
+    def test_calculate_total_offer_discount_for_basket(self):
+        basket = ['Bread', 'Apples', 'Apples', 'Apples']
+        Basket(basket).update_customer_basket()
+        # promotion_discount = 3 (apple qty) * 0.1 (10% discount on Apples price)
+        self.assertEqual(0.3, apple_promo.calculate_total_offer_discount_for_basket(basket))
 
-    def test_get_product_discount_amount(self):
-        self.assertEqual(0.1, Offer(current_offers).get_product_discount_amount(['Bread', 'Apples', 'Soup'], 'Apples'))
-        self.assertEqual(0.3, Offer(current_offers).get_product_discount_amount(['Bread', 'Apples', 'Apples', 'Apples'], 'Apples'))
-        self.assertEqual(0.8, Offer(current_offers).get_product_discount_amount(['Bread', 'Apples', 'Apples', 'Apples', 'Bread', 'Soup', 'Soup', 'Soup', 'Soup'], 'Bread'))
-        self.assertEqual(0.4, Offer(current_offers).get_product_discount_amount(['Bread', 'Apples', 'Apples', 'Apples', 'Soup', 'Soup', 'Soup', 'Soup'], 'Bread'))
+        basket = ['Bread', 'Apples', 'Apples', 'Apples', 'Bread', 'Soup', 'Soup', 'Soup', 'Soup']
+        Basket(basket).update_customer_basket()
+        # promotion_discount = 2 (qualified bundle qty) * 0.4 (50% discount on Bread price)
+        self.assertEqual(0.8, bread_promo.calculate_total_offer_discount_for_basket(basket))
+
+    def test_update_customer_basket(self):
+        self.assertEqual({'Apples': 3}, Basket(['Apples', 'Apples', 'Apples']).update_customer_basket())
+        self.assertEqual({'Apples': 1, 'Bread': 1, 'Milk': 1}, Basket(['Apples', 'Bread', 'Milk']).update_customer_basket())
+
+    def test_calculate_basket_subtotal(self):
+        self.assertEqual(2.45, PriceCalculator(['Apples', 'Soup', 'Bread']).calculate_basket_subtotal())
+        self.assertEqual(3.1, PriceCalculator(['Apples', 'Bread', 'Milk']).calculate_basket_subtotal())
+        self.assertEqual(2.75, PriceCalculator(['Soup', 'Bread', 'Milk']).calculate_basket_subtotal())
+
 
 if __name__ == '__main__':
     unittest.main()
