@@ -27,7 +27,7 @@ class TestPriceBasket(unittest.TestCase):
     def test_format_price(self):
         self.assertEqual('£0.41', Util.format_price(0.41))
         self.assertEqual('£1.01', Util.format_price(1.01))
-        self.assertEqual('£3.00', Util.format_price(3.00))
+        self.assertEqual('£3.00', Util.format_price(3))
 
     def test_get_product_price(self):
         self.assertEqual(1, Util.get_product_price('Apples', available_products_in_store))
@@ -40,6 +40,7 @@ class TestPriceBasket(unittest.TestCase):
         self.assertEqual(3, basket.get_product_quantity_in_basket('Apples'))
         self.assertEqual(2, basket.get_product_quantity_in_basket('Soup'))
         self.assertEqual(1, basket.get_product_quantity_in_basket('Bread'))
+        self.assertEqual(0, basket.get_product_quantity_in_basket('Milk'))
 
     def test_get_promotion_message(self):
         basket = create_basket(['Bread', 'Apples', 'Apples', 'Apples', 'Bread', 'Soup', 'Soup', 'Soup', 'Soup'])
@@ -72,6 +73,7 @@ class TestPriceBasket(unittest.TestCase):
         self.assertEqual(2.75, basket.calculate_basket_subtotal(available_products_in_store))
 
     def test_offers_can_be_applied_to_basket(self):
+        # Need 2 soups to have discount on bread
         basket = create_basket(['Milk', 'Bread', 'Soup'])
         self.assertFalse(PriceCalculator(basket, current_offers, available_products_in_store).offers_can_be_applied_to_basket())
 
