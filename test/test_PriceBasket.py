@@ -16,6 +16,11 @@ current_offers = [
 apple_promo = current_offers[0]
 bread_promo = current_offers[1]
 
+def create_basket(products):
+    basket = Basket(products)
+    basket.add_to_basket(available_products_in_store)
+    return basket
+
 
 class TestPriceBasket(unittest.TestCase):
 
@@ -31,21 +36,18 @@ class TestPriceBasket(unittest.TestCase):
         self.assertEqual(0.65, Util.get_product_price('Soup', available_products_in_store))
 
     def test_get_item_quantity(self):
-        basket = Basket(['Apples', 'Apples', 'Apples', 'Bread', 'Soup', 'Soup'])
-        basket.add_to_basket(available_products_in_store)
+        basket = create_basket(['Apples', 'Apples', 'Apples', 'Bread', 'Soup', 'Soup'])
         self.assertEqual(3, basket.get_product_quantity_in_basket('Apples'))
         self.assertEqual(2, basket.get_product_quantity_in_basket('Soup'))
         self.assertEqual(1, basket.get_product_quantity_in_basket('Bread'))
 
     def test_get_promotion_message(self):
-        basket = Basket(['Bread', 'Apples', 'Apples', 'Apples', 'Bread', 'Soup', 'Soup', 'Soup', 'Soup'])
-        basket.add_to_basket(available_products_in_store)
+        basket = create_basket(['Bread', 'Apples', 'Apples', 'Apples', 'Bread', 'Soup', 'Soup', 'Soup', 'Soup'])
         self.assertEqual('  Apples 10% off: £0.30', apple_promo.get_promotion_message(basket, available_products_in_store))
         self.assertEqual('  50% off Bread when buying 2 Soups: £0.80', bread_promo.get_promotion_message(basket, available_products_in_store))
 
     def test_calculate_total_offer_discount_for_basket(self):
-        basket = Basket(['Bread', 'Apples', 'Apples', 'Apples', 'Bread', 'Soup', 'Soup', 'Soup', 'Soup'])
-        basket.add_to_basket(available_products_in_store)
+        basket = create_basket(['Bread', 'Apples', 'Apples', 'Apples', 'Bread', 'Soup', 'Soup', 'Soup', 'Soup'])
         # promotion_discount = 3 (apple qty) * 0.1 (10% discount on Apples price)
         self.assertEqual(0.3, apple_promo.calculate_total_offer_discount_for_basket(basket, available_products_in_store))
 
@@ -53,38 +55,30 @@ class TestPriceBasket(unittest.TestCase):
         self.assertEqual(0.8, bread_promo.calculate_total_offer_discount_for_basket(basket, available_products_in_store))
 
     def test_update_customer_basket(self):
-        basket = Basket(['Apples', 'Apples', 'Apples'])
-        basket.add_to_basket(available_products_in_store)
+        basket = create_basket(['Apples', 'Apples', 'Apples'])
         self.assertEqual({'Apples': 3}, basket.get_basket())
 
-        basket = Basket(['Apples', 'Bread', 'Milk'])
-        basket.add_to_basket(available_products_in_store)
+        basket = create_basket(['Apples', 'Bread', 'Milk'])
         self.assertEqual({'Apples': 1, 'Bread': 1, 'Milk': 1}, basket.get_basket())
 
     def test_calculate_basket_subtotal(self):
-        basket = Basket(['Apples', 'Soup', 'Bread'])
-        basket.add_to_basket(available_products_in_store)
+        basket = create_basket(['Apples', 'Bread', 'Soup'])
         self.assertEqual(2.45, basket.calculate_basket_subtotal(available_products_in_store))
 
-        basket = Basket(['Apples', 'Bread', 'Milk'])
-        basket.add_to_basket(available_products_in_store)
+        basket = create_basket(['Apples', 'Bread', 'Milk'])
         self.assertEqual(3.1, basket.calculate_basket_subtotal(available_products_in_store))
 
-        basket = Basket(['Soup', 'Bread', 'Milk'])
-        basket.add_to_basket(available_products_in_store)
+        basket = create_basket(['Milk', 'Bread', 'Soup'])
         self.assertEqual(2.75, basket.calculate_basket_subtotal(available_products_in_store))
 
     def test_offers_can_be_applied_to_basket(self):
-        basket = Basket(['Soup', 'Bread', 'Milk'])
-        basket.add_to_basket(available_products_in_store)
+        basket = create_basket(['Milk', 'Bread', 'Soup'])
         self.assertFalse(PriceCalculator(basket, current_offers, available_products_in_store).offers_can_be_applied_to_basket())
 
-        basket = Basket(['Apples', 'Bread', 'Milk'])
-        basket.add_to_basket(available_products_in_store)
+        basket = create_basket(['Apples', 'Bread', 'Milk'])
         self.assertTrue(PriceCalculator(basket, current_offers, available_products_in_store).offers_can_be_applied_to_basket())
 
-        basket = Basket(['Soup', 'Bread', 'Soup'])
-        basket.add_to_basket(available_products_in_store)
+        basket = create_basket(['Soup', 'Bread', 'Soup'])
         self.assertTrue(PriceCalculator(basket, current_offers, available_products_in_store).offers_can_be_applied_to_basket())
 
 
