@@ -16,7 +16,6 @@ class Product:
 
 
 class Basket:
-    basket_with_qty = {}
     def __init__(self, available_products_in_store):
         self.basket = {}
         self.available_products_in_store = available_products_in_store
@@ -25,14 +24,15 @@ class Basket:
         return self.basket
 
     def add_to_basket(self, products=[]):
+        basket_with_qty = {}
         # get quantity of each product in basket (also check that they are available in store)
         for product in products:
             for item in self.available_products_in_store:
                 if item.get_name() == product:
-                    self.basket_with_qty.update({item.product_name: int(products.count(product))})
+                    basket_with_qty.update({item.product_name: int(products.count(product))})
 
         # create dict of Product class with quantity
-        for product, quantity in self.basket_with_qty.items():
+        for product, quantity in basket_with_qty.items():
             for item in self.available_products_in_store:
                 if item.get_name() == product:
                     self.basket.update({Product(item.get_name(), item.get_price()): quantity})
