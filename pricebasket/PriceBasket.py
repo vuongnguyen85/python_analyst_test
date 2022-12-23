@@ -67,7 +67,7 @@ class Offer:
         self.offer_product = offer_product
         self.percentage_off = int(percentage_off)
 
-    def calculate_single_use_discount(self, customer_basket):
+    def calculate_offer_discount(self, customer_basket):
         return customer_basket.get_product_price(self.offer_product) * self.percentage_off * .01
 
     @abstractmethod
@@ -91,7 +91,7 @@ class PercentageDiscountOffer(Offer):
         return f'  {self.offer_product} {self.percentage_off}% off: {Util.format_price(self.calculate_total_discount_for_basket(customer_basket))}'
 
     def calculate_total_discount_for_basket(self, customer_basket):
-        return round((super().calculate_single_use_discount(customer_basket) * customer_basket.get_product_quantity_within_basket(self.offer_product)), 2)
+        return round((super().calculate_offer_discount(customer_basket) * customer_basket.get_product_quantity_within_basket(self.offer_product)), 2)
         # discount_amount can be multiplied by offer_product quantity
 
 
@@ -113,7 +113,7 @@ class BuyXGetYDiscountOffer(Offer):
             # get multiple of (required combination of products), in basket
             promo_limit = round(additional_product_quantity / self.additional_product_quantity_required)
             # single_use_discount amount can be multiplied by minimum value between multiple of (required combination of products) and quantity of offer_product in basket
-            return round((super().calculate_single_use_discount(customer_basket) * min(promo_limit, customer_basket.get_product_quantity_within_basket(self.offer_product))), 2)
+            return round((super().calculate_offer_discount(customer_basket) * min(promo_limit, customer_basket.get_product_quantity_within_basket(self.offer_product))), 2)
         else:
             return 0
 

@@ -50,6 +50,11 @@ class TestPriceBasket(unittest.TestCase):
         self.assertEqual('  Apples 10% off: 30p', apple_promo.get_promotion_message(basket))
         self.assertEqual('  50% off Bread when buying 2 Soups: 80p', bread_promo.get_promotion_message(basket))
 
+    def test_calculate_offer_discount(self):
+        basket = create_basket(['Bread', 'Apples', 'Apples', 'Apples', 'Bread', 'Soup', 'Soup', 'Soup', 'Soup'])
+        self.assertEqual(0.1, apple_promo.calculate_offer_discount(basket))
+        self.assertEqual(0.4, bread_promo.calculate_offer_discount(basket))
+
     def test_calculate_total_offer_discount_for_basket(self):
         basket = create_basket(['Bread', 'Apples', 'Apples', 'Apples', 'Bread', 'Soup', 'Soup', 'Soup', 'Soup'])
         # promotion_discount = 3 (apple qty) * 0.1 (10% discount on Apples price)
