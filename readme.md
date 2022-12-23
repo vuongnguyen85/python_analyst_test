@@ -20,7 +20,7 @@ We currently have 2 types of Offers created. We can amend the following from dat
 If we want to create new offers, see next section. 
 
 ### Creating new offers
-- To create a new offer type, we need to make use of the Offer class (see line 62 and 76 for details). 
+- To create a new offer type, we need to make use of the Offer class (see line 80 and 94 for details). 
 - We need to define functions for get_promotion_message and calculate_total_offer_discount_for_basket.
 - If any new Offer Class is created, we need to amend current_offers.csv file to add the newly created offer. 
 

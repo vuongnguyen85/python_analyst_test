@@ -25,7 +25,7 @@ class Basket:
         return self.basket
 
     def add_to_basket(self, products=[]):
-        # get quantity of each product in basket (also check that they are available in store
+        # get quantity of each product in basket (also check that they are available in store)
         for product in products:
             for item in self.available_products_in_store:
                 if item.get_name() == product:
@@ -37,12 +37,6 @@ class Basket:
                 if item.get_name() == product:
                     self.basket.update({Product(item.get_name(), item.get_price()): quantity})
 
-    def check_product_is_available(self, product):
-        for item in self.available_products_in_store:
-            if item.get_name() == product:
-                return True
-        return False
-
     def get_product_quantity_in_basket(self, product_name):
         try:
             for product, quantity in self.get_basket().items():
@@ -51,16 +45,16 @@ class Basket:
         except KeyError:
             return 0
 
+    def get_product_price(self, product_name):
+        for product, quantity in self.get_basket().items():
+            if product_name == product.get_name():
+                return product.get_price()
+
     def calculate_basket_subtotal(self):
         subtotal = 0
         for product, quantity in self.get_basket().items():
             subtotal += product.get_price() * quantity
         return round(subtotal, 2)
-
-    def get_product_price(self, product_name):
-        for product, quantity in self.get_basket().items():
-            if product_name == product.get_name():
-                return product.get_price()
 
 
 class Offer:
