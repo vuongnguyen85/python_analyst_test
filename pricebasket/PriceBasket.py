@@ -159,6 +159,12 @@ class PriceCalculator:
 
 class Util:
     @staticmethod
+    def read_user_inputs():
+        parser = argparse.ArgumentParser()
+        parser.add_argument("items", type=str, nargs='+')  # nargs='+' here means at least one value required with no limit of how many arguments (products) could be added
+        return parser.parse_args()
+
+    @staticmethod
     def format_price_in_uk_currency(price):
         if price < 0:
             return 'price can\'t be less than 0.'
@@ -195,9 +201,7 @@ if __name__ == '__main__':
     available_products = Util.get_available_products_in_store()
     current_offers = Util.get_current_offers()
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("items", type=str, nargs='+')  # nargs='+' here means at least one value required with no limit of how many arguments (products) could be added
-    args = parser.parse_args()
+    args = Util.read_user_inputs()
 
     basket = Basket(available_products)
     basket.update_basket(args.items)
